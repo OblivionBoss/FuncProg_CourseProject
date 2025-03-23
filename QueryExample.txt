@@ -1,0 +1,78 @@
+-- SELECT Statement Examples:
+
+SELECT * FROM customers;
+SELECT name, email FROM users WHERE age > 18;
+SELECT product_name, price FROM products ORDER BY price DESC LIMIT 10;
+SELECT COUNT(*) FROM orders WHERE order_date >= '2023-01-01';
+SELECT DISTINCT category FROM items;
+SELECT AVG(salary) FROM employees WHERE department = 'Sales';
+SELECT employee_name FROM employees JOIN departments ON employees.department_id = departments.department_id WHERE departments.department = 'Marketing';
+SELECT customer_id, SUM(order_total) FROM orders GROUP BY customer_id HAVING SUM(order_total) > 1000;
+SELECT product_name, ROW_NUMBER() OVER (PARTITION BY category ORDER BY price DESC) FROM products;
+SELECT * FROM (SELECT name FROM users) AS subquery WHERE age > 25;
+
+-- DELETE Statement Examples:
+
+DELETE FROM customers WHERE customer_id = 123;
+DELETE FROM orders WHERE order_date < '2023-01-01';
+DELETE FROM products WHERE price > 100;
+DELETE FROM users; -- Deletes all rows from the users table
+
+-- UPDATE Statement Examples:
+
+UPDATE customers SET email = 'newemail@example.com' WHERE customer_id = 123;
+UPDATE products SET price = price * 1.1 WHERE category = 'Electronics';
+UPDATE users SET age = age + 1 WHERE name = 'John Doe';
+UPDATE employees SET salary = salary * 1.05, department = 'Management' WHERE employee_id = 456;
+
+-- INSERT Statement Examples:
+
+INSERT INTO customers (name, email, age) VALUES ('Jane Smith', 'jane@example.com', 25);
+INSERT INTO products (product_name, price, category) VALUES ('Laptop', 1200.00, 'Electronics');
+INSERT INTO users (username, password, email) VALUES ('testuser', 'securepass', 'test@example.com');
+INSERT INTO orders (customer_id, order_date, order_total) VALUES (123, '2023-10-26', 500.00);
+
+-- CREATE TABLE Statement Examples:
+
+CREATE TABLE employees (employee_id INTEGER PRIMARY KEY, employee_name TEXT, salary REAL, department_id INTEGER);
+CREATE TABLE departments (department_id INTEGER PRIMARY KEY, department TEXT);
+CREATE TABLE items (item_id INTEGER, item_name TEXT, category TEXT);
+CREATE TABLE users (user_id INTEGER, username TEXT, password TEXT, email TEXT);
+
+-- DROP TABLE Statement Examples:
+
+DROP TABLE customers;
+DROP TABLE products;
+DROP TABLE users;
+
+-- ALTER TABLE Statement Examples:
+
+ALTER TABLE customers ADD COLUMN phone TEXT;
+ALTER TABLE products RENAME COLUMN price TO retail_price;
+ALTER TABLE users ALTER COLUMN age SET NOT NULL;
+
+-- CREATE INDEX Statement Examples:
+
+CREATE INDEX idx_customers_email ON customers (email);
+CREATE INDEX idx_products_category ON products (category);
+CREATE INDEX idx_users_username ON users (username);
+
+-- DROP INDEX Statement Examples:
+
+DROP INDEX idx_customers_email;
+DROP INDEX idx_products_category;
+DROP INDEX idx_users_username;
+
+-- PRAGMA Statement Examples:
+
+PRAGMA journal_mode = WAL;
+PRAGMA foreign_keys = ON;
+PRAGMA cache_size = 10000;
+
+-- CREATE TABLE Statement Examples:
+
+CREATE TABLE my_table ( id INT, name VARCHAR )
+CREATE TABLE users ( user_id INTEGER, username TEXT, email TEXT )
+CREATE TABLE products ( product_id INTEGER, product_name TEXT, price REAL )
+CREATE TABLE  items  (  item_id  INTEGER  ,  item_name  TEXT  )
+CREATE TABLE category ( category_id INTEGER )
