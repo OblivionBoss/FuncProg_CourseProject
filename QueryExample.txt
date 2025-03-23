@@ -1,15 +1,12 @@
 -- SELECT Statement Examples:
 
-SELECT * FROM customers;
 SELECT name, email FROM users WHERE age > 18;
 SELECT product_name, price FROM products ORDER BY price DESC LIMIT 10;
-SELECT COUNT(*) FROM orders WHERE order_date >= '2023-01-01';
+SELECT customers_id FROM orders WHERE order_date >= '2023-01-01';
 SELECT DISTINCT category FROM items;
-SELECT AVG(salary) FROM employees WHERE department = 'Sales';
+SELECT salary FROM employees WHERE department = 'Sales';
 SELECT employee_name FROM employees JOIN departments ON employees.department_id = departments.department_id WHERE departments.department = 'Marketing';
-SELECT customer_id, SUM(order_total) FROM orders GROUP BY customer_id HAVING SUM(order_total) > 1000;
-SELECT product_name, ROW_NUMBER() OVER (PARTITION BY category ORDER BY price DESC) FROM products;
-SELECT * FROM (SELECT name FROM users) AS subquery WHERE age > 25;
+SELECT customer_id, order_total FROM orders GROUP BY customer_id HAVING SUM(order_total) > 1000;
 
 -- DELETE Statement Examples:
 

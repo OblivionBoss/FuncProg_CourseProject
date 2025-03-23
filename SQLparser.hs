@@ -126,26 +126,59 @@ selectParser = do
   recursiveCTE <- optional (symbol "WITH RECURSIVE" *> lexeme identifier)
   _ <- symbol "SELECT"
   distinct <- option False (symbol "DISTINCT" >> return True)
-  all <- option False (symbol "ALL" >> return True)
+  all' <- option False (symbol "ALL" >> return True)
   fields <- sepBy (lexeme identifier) (symbol ",")
   _ <- symbol "FROM"
   table <- lexeme identifier
-  joinClause <- optional (symbol "JOIN" *> lexeme (pack <$> someTill anySingle (lookAhead (try (symbol "WHERE") <|> try (symbol "GROUP BY") <|> try (symbol "HAVING") <|> try (symbol "WINDOW") <|> try (symbol "VALUES") <|> try (symbol "ORDER BY") <|> try (symbol "LIMIT") <|> ("" <$ eof)))))
-  condition <- optional (symbol "WHERE" *> lexeme (pack <$> someTill anySingle (lookAhead (try (symbol "GROUP BY") <|> try (symbol "HAVING") <|> try (symbol "WINDOW") <|> try (symbol "VALUES") <|> try (symbol "ORDER BY") <|> try (symbol "LIMIT") <|> ("" <$ eof)))))
+  joinClause <- optional (symbol "JOIN" *> lexeme (pack <$> someTill anySingle 
+    (lookAhead 
+      (   try (symbol "WHERE") 
+      <|> try (symbol "GROUP BY") 
+      <|> try (symbol "HAVING") 
+      <|> try (symbol "WINDOW") 
+      <|> try (symbol "VALUES") 
+      <|> try (symbol "ORDER BY") 
+      <|> try (symbol "LIMIT") 
+      <|> ("" <$ eof)))))
+  condition <- optional (symbol "WHERE" *> lexeme (pack <$> someTill anySingle 
+    (lookAhead 
+      (   try (symbol "GROUP BY") 
+      <|> try (symbol "HAVING") 
+      <|> try (symbol "WINDOW") 
+      <|> try (symbol "VALUES") 
+      <|> try (symbol "ORDER BY") 
+      <|> try (symbol "LIMIT") 
+      <|> ("" <$ eof)))))
   groupBy <- optional (symbol "GROUP BY" *> sepBy (lexeme identifier) (symbol ","))
-  having <- optional (symbol "HAVING" *> lexeme (pack <$> someTill anySingle (lookAhead (try (symbol "WINDOW") <|> try (symbol "VALUES") <|> try (symbol "ORDER BY") <|> try (symbol "LIMIT") <|> ("" <$ eof)))))
-  windowClause <- optional (symbol "WINDOW" *> ((,) <$> (lexeme identifier <* symbol "AS") <*> lexeme (pack <$> someTill anySingle (lookAhead (try (symbol "VALUES") <|> try (symbol "ORDER BY") <|> try (symbol "LIMIT") <|> ("" <$ eof))))))
+  having <- optional (symbol "HAVING" *> lexeme (pack <$> someTill anySingle 
+    (lookAhead 
+      (   try (symbol "WINDOW") 
+      <|> try (symbol "VALUES") 
+      <|> try (symbol "ORDER BY") 
+      <|> try (symbol "LIMIT") 
+      <|> ("" <$ eof)))))
+  windowClause <- optional (symbol "WINDOW" *> ((,) <$> 
+    (lexeme identifier <* symbol "AS") <*> 
+    lexeme (pack <$> someTill anySingle 
+      (lookAhead 
+        ( try (symbol "VALUES") 
+        <|> try (symbol "ORDER BY") 
+        <|> try (symbol "LIMIT") 
+        <|> ("" <$ eof))))))
   valuesClause <- optional (symbol "VALUES" *> (symbol "(" *> sepBy (lexeme identifier) (symbol ",") <* symbol ")"))
-  compoundOperator <- optional (lexeme (pack <$> someTill anySingle (try (symbol "ORDER BY") <|> try (symbol "LIMIT") <|> ("" <$ eof))))  
+  compoundOperator <- optional (lexeme (pack <$> someTill anySingle 
+    (   try (symbol "ORDER BY") 
+    <|> try (symbol "LIMIT") 
+    <|> ("" <$ eof))))  
   orderByClause <- optional (symbol "ORDER BY" *> sepBy (lexeme identifier) (symbol ","))
   limitClause <- optional (symbol "LIMIT" *> L.decimal)
   offsetClause <- optional (symbol "OFFSET" *> L.decimal)
-  return $ Query fields table condition groupBy having windowClause valuesClause compoundOperator orderByClause limitClause offsetClause recursiveCTE distinct all joinClause
+  return $ Query fields table condition groupBy having windowClause valuesClause compoundOperator orderByClause limitClause offsetClause recursiveCTE distinct all' joinClause
 
 addColumnParser :: Parser Command
 addColumnParser = do
   _ <- symbol "ALTER TABLE"
-  schemaName <- optional (lexeme identifier <* symbol ".")
+  _schemaName <- optional (lexeme identifier <* symbol ".")
   tableName <- lexeme identifier
   _ <- symbol "ADD" *> symbol "COLUMN"
   columnName <- lexeme identifier
@@ -155,7 +188,7 @@ addColumnParser = do
 alterColumnParser :: Parser Command
 alterColumnParser = do
   _ <- symbol "ALTER TABLE"
-  schemaName <- optional (lexeme identifier <* symbol ".")
+  _schemaName <- optional (lexeme identifier <* symbol ".")
   tableName <- lexeme identifier
   _ <- symbol "ALTER" *> symbol "COLUMN"
   columnName <- lexeme identifier
@@ -301,6 +334,7 @@ beginParser = do
     Just "IMMEDIATE" -> BeginImmediate
     Just "EXCLUSIVE" -> BeginExclusive
     Nothing -> Begin
+    _ -> error "no more cases"
 
 commitParser :: Parser Command
 commitParser = do
@@ -372,7 +406,11 @@ updateLimitedParser = do
     table <- lexeme identifier
     _ <- symbol "SET"
     updates <- sepBy ((,) <$> lexeme identifier <*> (symbol "=" *> lexeme valueParser)) (symbol ",")
-    condition <- optional (symbol "WHERE" *> lexeme (pack <$> someTill anySingle (lookAhead (try (symbol "LIMIT") <|> try (symbol "ORDER BY") <|> ("" <$ eof)))))
+    condition <- optional (symbol "WHERE" *> lexeme (pack <$> someTill anySingle 
+      (lookAhead 
+        (   try (symbol "LIMIT") 
+        <|> try (symbol "ORDER BY") 
+        <|> ("" <$ eof)))))
     limitClause <- optional (symbol "LIMIT" *> L.decimal)
     orderByClause <- optional (symbol "ORDER BY" *> lexeme identifier)
     return $ UpdateLimited table updates condition limitClause orderByClause
@@ -412,8 +450,8 @@ commandParser =
 
 -- Running the parser (DONT TOUCH)
 
-parseQuerytxt :: Text -> Either (ParseErrorBundle Text Void) Command
-parseQuerytxt = parse commandParser "query"
+parseSQLtxt :: Text -> Either (ParseErrorBundle Text Void) Command
+parseSQLtxt = parse commandParser "query"
 
-parseQuery :: String -> Either (ParseErrorBundle Text Void) Command
-parseQuery = parseQuerytxt . pack
+parseSQL :: String -> Either (ParseErrorBundle Text Void) Command
+parseSQL = parseSQLtxt . pack
