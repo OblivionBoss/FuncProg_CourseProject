@@ -1,0 +1,31 @@
+SELECT * 
+FROM STUDENT 
+WHERE GPA >= 3.5
+    select student (Geq (Ident "GPA") (EDouble 3.5))
+
+SELECT Name, GPA
+FROM STUDENT 
+WHERE GPA >= 3.5
+    project (select student (Geq (Ident "GPA") (EDouble 3.5))) ["Name", "GPA"]
+
+SELECT *
+FROM EMPLOYEE
+JOIN DEPARTMENT
+ON D_No == Dnumber
+    exjoin = joinOn employee department (Equal (Ident "D_No") (Ident "Dnumber"))
+
+SELECT * 
+FROM 
+EMPLOYEE 
+JOIN DEPARTMENT 
+ON D_No == Dnumber
+WHERE Manager_ID == EMP_ID AND Salary < 90000
+    exselect = select exjoin (And (Equal (Ident "Manager_ID") (Ident "EMP_ID")) (Lt (Ident "Salary") (EInteger 90000)))
+
+SELECT Name, Salary, DName
+FROM 
+EMPLOYEE 
+JOIN DEPARTMENT 
+ON D_No == Dnumber
+WHERE Manager_ID == EMP_ID AND Salary < 90000
+    project exselect ["Name", "Salary", "DName"]
